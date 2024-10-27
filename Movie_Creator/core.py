@@ -1,7 +1,7 @@
-from on_screen_text_generator import on_screen_generator
-from process_user_data import process_data
-from script_generator import script_generator
-from video_input import video_input
+from Movie_Creator.on_screen_text_generator import on_screen_generator
+from Movie_Creator.process_user_data import process_data
+from Movie_Creator.script_generator import script_generator
+from Movie_Creator.video_input import video_input
 
 
 class core:
