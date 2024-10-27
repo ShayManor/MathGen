@@ -1,0 +1,14 @@
+runtime: python312
+
+entrypoint: gunicorn -b :$PORT app:app
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 5
+
+handlers:
+  - url: /static
+    static_dir: static
+  - url: /.*
+    script: auto
+
