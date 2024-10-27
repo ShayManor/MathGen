@@ -24,8 +24,8 @@ class process_data:
         if run.status == 'completed':
             messages = self.client.beta.threads.messages.list(thread_id=run.thread_id)
             ai_response = messages.data[0].content[0].text.value
-            if ai_response == "false":
-                return "Error"
+            # if ai_response == "false":
+            #     return "Error"
             return ai_response
         else:
             return "Error"
