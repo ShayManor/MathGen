@@ -14,8 +14,8 @@ class core:
         post_processed_data = process.start_processing()
         print("Post Processing Finished")
         print(post_processed_data)
-        if post_processed_data == "Error":
-            return False
+        # if post_processed_data == "Error":
+        #     return False
 
         script = script_generator(apiKey=self.apiKey, prompt=post_processed_data)
         script = script.start_process()

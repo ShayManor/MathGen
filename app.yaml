@@ -1,16 +1,10 @@
-runtime: python312
+env: flex
 
-entrypoint: gunicorn -b :$PORT app:app
+entrypoint: gunicorn -b :$PORT app:app --timeout 400
 
-instance_class: F4
+resources:
+  cpu: 4
+  memory_gb: 6
+  disk_size_gb: 20  # Increased disk size for better storage
 
-automatic_scaling:
-  min_instances: 1
-  max_instances: 5
-
-handlers:
-  - url: /static
-    static_dir: static
-  - url: /.*
-    script: auto
-
+# Remove handlers as Flexible Environment handles routing differently

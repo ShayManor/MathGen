@@ -19,8 +19,7 @@ class solver:
         core_instance = core(self.problem, openai.api_key)
         video_inputs = core_instance.start()
         mov = create_movie(openai.api_key)
-        movie_name = mov.create_video_from_inputs(video_inputs)
-        mov.create_video_from_inputs(video_inputs, movie_name)
+        movie_name = mov.create_video_from_inputs(video_inputs=video_inputs)
         self.link = aws_uploader().upload(file_path=movie_name)
         return self.to_json()
 
