@@ -1,6 +1,6 @@
 env: flex
 
-entrypoint: gunicorn -b :$PORT app:app --timeout 400
+entrypoint: gunicorn -b :$PORT app:app --timeout 400 --workers 4
 
 resources:
   cpu: 4

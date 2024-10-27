@@ -1,0 +1,23 @@
+# template.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Flask application running on AWS Lambda and API Gateway
+
+Resources:
+  FlaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.12  # Choose the Python version you are using
+      CodeUri: .
+      MemorySize: 4096  # Adjust based on your application's needs
+      Timeout: 400      # Adjust based on your application's needs
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY

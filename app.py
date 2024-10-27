@@ -2,7 +2,6 @@ import os
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
 from Movie_Creator.solver import solver  # Adjust the import as per your project structure
 
 app = Flask(__name__)
@@ -20,6 +19,7 @@ def solve():
     problem = data.get('problem')
     result = solver(problem).upload()
     return jsonify(result)
+
 
 
 if __name__ == '__main__':
