@@ -11,6 +11,7 @@ from moviepy.editor import (
 )
 from openai import OpenAI
 
+
 # from script_to_audio import script_to_audio
 
 
@@ -32,9 +33,15 @@ class script_to_audio:
         except:
             print('')
 
+
 class create_movie:
     def __init__(self, api_key):
         self.api_key = api_key
+
+    def make_silence(self, duration, fps=44100, n_channels=2):
+        total_samples = int(duration * fps)
+        array = np.zeros((total_samples, n_channels))
+        return AudioArrayClip(array, fps=fps)
 
     def escape_latex(self, text):
         # Use regex to detect LaTeX commands and avoid escaping them
@@ -190,11 +197,12 @@ class create_movie:
         # Composite all clips together
         video_clip = CompositeVideoClip(line_clips, size=(video_width, video_height))
         video_clip = video_clip.set_audio(final_audio)
+        print(f"DEBUG: Writing video with fps={video_clip.fps}")  # Should output: 24
 
         # Write the video file
         video_clip.write_videofile(
             output_video,
-            fps=24,
+            fps=video_clip.fps,
             codec='libx264',
             preset='medium',
             bitrate="1000k",
@@ -214,8 +222,3 @@ class create_movie:
 
         print(f"Total time taken: {time.time() - start_time} seconds.")
         return output_video
-
-    def make_silence(self, duration, fps=44100, n_channels=2):
-        total_samples = int(duration * fps)
-        array = np.zeros((total_samples, n_channels))
-        return AudioArrayClip(array, fps=fps)
