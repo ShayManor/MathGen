@@ -194,7 +194,7 @@ class create_movie:
         # Write the video file
         video_clip.write_videofile(
             output_video,
-            fps=8,
+            fps=24,
             codec='libx264',
             preset='medium',
             bitrate="1000k",
