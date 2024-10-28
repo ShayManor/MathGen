@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "helloworldhackathonyoutube",
+  "private_key_id": "403e869baf151caf657a9eac004ffb40f290abc5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDb/XRxzxRfiBuT\nt/vpJOFRn/r7AsHMNyx4UBOSh4zuytS1WVvJTSoB+l7LBUDUAtCy5+wY0lt3Gm0x\nO4kcWSR/hoCD+piuLy1KHm8H92cMpZ3v8LF4brCnj+PU4Kz+1fzQBVrFgR624vtk\nZDgqacKHsMhizBX+46hhLIimGFTX5zuipkFE+XFq2CJ0Tccaz/X/f4e5UutkFqPf\nuZcKFYHdShlOOY4KzZrObpJpiW1zGbgEF5xsuodzbv0YEzQRq8hI0GCjAL4bXjg8\naQHySUtwnE0P73eOBe4RIAOLz6KU8sWRSxjjcfeew2DmK5C3jeSLW51zNsZeksXI\n1BT121GrAgMBAAECggEAYrdm5+UdRsscWNqgK5w1kbvA05+GmF2P0oNYbRHvj34s\nGh65nejG93FC1UaLszd6MDX7T54hlh4hLo0BN1vXEXSpOdAbcFpSL+bdOw1tTBML\nfs6azKibE+3xNicF6irbEfu9IlCRGE9dsMx6GaowtVQCb7cWDbVZ6xUhUqsrc2AG\nD4Ld6/0klU8X4u9mvgDYpdVjtQ28rFqGKNHZC18nTbAaKFxRhHzl5L13Jj6eLYPF\nRWJ8dt+fDRXchgHiKC+SyQiQ9lIs14FIE64mi4VoOBfUlQdwZROVQojUav4jSv1j\nnKM2uungwEyVYHSK1mJ6P9r9nNDxx6hOqe8hHkSOmQKBgQD8qUl7GCt4pJLofrGa\n/YfzStmHC2M419d57HecJCnd6kEMvnQ8LTUZpBVoNoMg6UC55YXEAPBdvSQbCcr+\n7QTq+zZyiIs/TzwCGRSeKP3ZBUgN0WmqzyeF4psaVLEV3u2PIgPpl15+CAhsu8Tk\nrs+x0plcwHG8paWu4qBPsdBIYwKBgQDe5aVyt6gsl1p8kLH6CjZYzPGVSoatw3/y\nNHmr2K7PAEs4oX1tMTLugvvGSmQI5BnmFEzKS0sWp7VGMK44O5rUgX4tvxB36QLj\n6mNzp2pX1847iYHOC/2ZKMBZUuIie7MpwFX7/kvXsBxuMiP2mxsDf6yERtLAdv+R\nOl9SMP7AGQKBgAP7gx3+lojTR0GE5bXEs0ThdCZNxqWZuVrBoG0EoOhPjfDue5SL\nPeAGlxPKcCyvoIaNmJsrTJ6doZkPgXSdNcuiZAxQHKnFzPNXg9yuVrn5/FXDbD/1\n/fB9TuaOWTA4EFSGO7uN2D5yT/euyf60xq9N2377xY8sqTzlc5NuARNzAoGBAM65\nkh65MuJYZXXOBSLvwcPOH+jkO9CA1vNds9KrnkUh8qHNNLTGwoPvO2+GowyT8Wkw\nPqAIANY8KKW2lH5W2ZxplQr8f1uW4jVbt20WQkzCO+V//MGK4WLhJrQxaMWukFYS\nqiyShui9z0BshGo9JGq0SN5NiT0zoIei6bEi+8JRAoGATImiSZNNJiWz4OgnRVLi\n2fB5qa/5Sh5rfjj4Dx7AeVoMy1ebb07M/PjsybMAhK2ri+kHsOMqqg8cjiBx1P98\nJx2vt90m8igyJBsYcWDGYqTdywgmwAvJ79e5KuCwn5/FFRAkPC9s/e9Jxz5rIZr2\nw/xX/UeLIAleiEBUhy8ZnHM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "gcs-uploader-sa@helloworldhackathonyoutube.iam.gserviceaccount.com",
+  "client_id": "115666510462193703672",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gcs-uploader-sa%40helloworldhackathonyoutube.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
