@@ -194,12 +194,12 @@ class create_movie:
         # Write the video file
         video_clip.write_videofile(
             output_video,
-            fps=18,
+            fps=8,
             codec='libx264',
             preset='medium',
             bitrate="1000k",
             audio_codec='aac',
-            threads=8
+            threads=12
         )
 
         # Clean up image and audio files
