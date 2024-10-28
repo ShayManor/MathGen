@@ -20,6 +20,3 @@ def upload_to_bucket(path_to_file='final_movie.jpeg', bucket_name='helloworldvid
     # returns a public url
     print(blob.public_url)
     return blob.public_url
-
-
-upload_to_bucket()

@@ -2,7 +2,7 @@ import json
 import os
 import openai
 
-from Api.export_file import aws_uploader
+from Api.export_file import upload_to_bucket
 from Movie_Assembler.create_movie import create_movie
 from Movie_Creator.core import core
 
@@ -20,7 +20,7 @@ class solver:
         video_inputs = core_instance.start()
         mov = create_movie(openai.api_key)
         movie_name = mov.create_video_from_inputs(video_inputs=video_inputs)
-        self.link = aws_uploader().upload(file_path=movie_name)
+        self.link = upload_to_bucket().upload(file_path=movie_name)
         return self.to_json()
 
     def to_json(self):
