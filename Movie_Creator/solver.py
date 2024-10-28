@@ -20,7 +20,7 @@ class solver:
         video_inputs = core_instance.start()
         mov = create_movie(openai.api_key)
         movie_name = mov.create_video_from_inputs(video_inputs=video_inputs)
-        self.link = upload_to_bucket().upload(file_path=movie_name)
+        self.link = upload_to_bucket(path_to_file=movie_name)
         return self.to_json()
 
     def to_json(self):
