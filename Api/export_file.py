@@ -22,4 +22,4 @@ def upload_to_bucket(path_to_file='final_movie.jpeg', bucket_name='helloworldvid
     return blob.public_url
 
 
-upload_to_bucket('HelloWorldBackend/background.jpeg')
+upload_to_bucket('HelloWorldBackend/final_movie.mp4')
