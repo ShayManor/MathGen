@@ -161,7 +161,7 @@ class create_movie:
             self.render_latex_to_image(cumulative_text, image_file)
 
             # Create ImageClip for the cumulative image
-            line_clip = ImageClip(image_file)
+            line_clip = ImageClip(image_file).set_fps(24)
             line_clip = line_clip.set_position('center')
 
             # Set the timing for the line to appear and disappear
@@ -195,7 +195,8 @@ class create_movie:
         line_clips = list(line_clips_dict.values())
 
         # Composite all clips together
-        video_clip = CompositeVideoClip(line_clips, size=(video_width, video_height))
+        video_clip = CompositeVideoClip(line_clips, size=(video_width, video_height)).set_fps(24)
+
         video_clip = video_clip.set_audio(final_audio)
         print(f"DEBUG: Writing video with fps={video_clip.fps}")  # Should output: 24
 
