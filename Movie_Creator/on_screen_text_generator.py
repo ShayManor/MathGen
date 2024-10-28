@@ -24,7 +24,7 @@ class on_screen_generator:
         )
 
         if run.status == 'completed':
-            messages = self.client.beta.threads.messages.list(thread_id=run.thread_id)
+            messages = self.client.beta.threads.messages.list(thread_id=thread.id)
             ai_response = messages.data[0].content[0].text.value
             ai_response.replace("\\\\", "\\")
             ai_response.replace("\\\\", "\\")

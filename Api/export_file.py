@@ -1,23 +1,25 @@
-import os
-import uuid
+from uuid import uuid1
 
-import boto3
-
-
-class aws_uploader:
-    def __init__(self):
-        boto3.client('s3')
-        self.s3_client = boto3.client('s3')
-        self.bucket_name = 'manors-videos-bucket'
-
-    def upload(self, file_path='final_movie.mp4', object_name='video.mp4'):
-        file_path = file_path
-        object_name = str(uuid.uuid1()) + object_name
-
-        # Upload the file
-        self.s3_client.upload_file(file_path, self.bucket_name, object_name)
-        url = f"https://{self.bucket_name}.s3.amazonaws.com/{object_name}"
-        os.remove(file_path)
-        return url
+from google.cloud import storage
 
 
+# pip install --upgrade google-cloud-storage.
+def upload_to_bucket(path_to_file='final_movie.jpeg', bucket_name='helloworldvideostorage'):
+    """ Upload data to a bucket"""
+
+    # Explicitly use service account credentials by specifying the private key
+    # file.
+    storage_client = storage.Client.from_service_account_json(
+        'helloworldhackathonyoutube-403e869baf15.json')
+
+    # print(buckets = list(storage_client.list_buckets())
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(path_to_file)
+    blob.upload_from_filename(path_to_file)
+
+    # returns a public url
+    print(blob.public_url)
+    return blob.public_url
+
+
+upload_to_bucket()

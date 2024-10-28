@@ -4,6 +4,7 @@ click==8.1.7
 comm==0.2.2
 Flask==3.0.3
 Flask-Cors==5.0.0
+google~=3.0.0
 google-api-core==2.19.2
 google-api-python-client==2.149.0
 google-auth==2.34.0
