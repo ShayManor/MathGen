@@ -1,15 +1,21 @@
 from openai import OpenAI
 from typing import *
 
-
 class on_screen_generator:
-    def __init__(self, apiKey):
+    def __init__(self):
         self.client = OpenAI()
-        self.client.api_key = apiKey
-        self.assistant_id = 'asst_CoRUsRi8KqrdnZIP4UyCi2WY'
+        # self.assistant_id = 'asst_CoRUsRi8KqrdnZIP4UyCi2WY'
+        self.assistant_id = 'asst_x9o2SLVQzX6YKhLVjOtPWHAy'
 
-    def start_process(self, pre_block: Optional[str], block: str, post_block: Optional[str]):
-        prompt = "Script before block: " + (pre_block or "") + "\nBlock script: " + block + "\nScript after block: " + (post_block or "")
+    def start_process(self, block: str):
+        script = block.split('~')
+        l = len(script)
+        newscr = []
+        for i, s in enumerate(script):
+            newscr += f'Step {i + 1} of script: {s} \n'
+
+        prompt = f'Number of sections should be: {l}\n Script: {newscr}'
+        # prompt = "Script before block: " + (pre_block or "") + "\nBlock script: " + block + "\nScript after block: " + (post_block or "")
         assistant = self.client.beta.assistants.retrieve(
             assistant_id=self.assistant_id
         )
@@ -28,7 +34,12 @@ class on_screen_generator:
             ai_response = messages.data[0].content[0].text.value
             ai_response.replace("\\\\", "\\")
             ai_response.replace("\\\\", "\\")
-            print(ai_response)
-            return ai_response
+            split_str = ai_response.split('\n')
+            split_str = split_str[1:-1]
+            r = ""
+            for s in split_str:
+                r = r + s + "\n"
+            print(r)
+            return r
         else:
             return "Error"

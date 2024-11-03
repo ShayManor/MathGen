@@ -1,6 +1,7 @@
 axios==0.4.0
 boto3==1.35.49
 click==8.1.7
+cloudinary~=1.41.0
 comm==0.2.2
 Flask==3.0.3
 Flask-Cors==5.0.0
@@ -23,6 +24,7 @@ moviepy==1.0.3
 numpy==1.26.4
 oauthlib==3.2.2
 openai==1.52.2
+python-dotenv==1.0.1
 quil==0.11.4
 requests==2.32.3
 requests-oauthlib==2.0.0
