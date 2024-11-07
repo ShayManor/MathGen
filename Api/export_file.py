@@ -60,7 +60,7 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
     #     url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{encoded_object_name}"
 
     print(presigned_url)
-    return presigned_url
+    return str(presigned_url).split('?AWS')[0]
 
 
 
