@@ -2,12 +2,12 @@ import os
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 from flask.cli import load_dotenv
+import urllib.parse
 
 # Default bucket name
 DEFAULT_BUCKET_NAME = 'manors-videos-bucket'
 
 load_dotenv()
-
 
 def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_NAME, object_name=None, public=True):
     """Upload a file to an S3 bucket
@@ -22,15 +22,15 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
     if object_name is None:
         object_name = os.path.basename(path_to_file)
 
+    # Encode the object_name to ensure special characters are properly handled
+    encoded_object_name = urllib.parse.quote(object_name, safe='')
+
     # Initialize S3 client using environment variables
     s3_client = boto3.client('s3')
 
     try:
-        # extra_args = {}
-        # if public:
-        #     extra_args['ACL'] = 'public-read'
-
-        s3_client.upload_file(path_to_file, bucket_name, object_name)
+        # Upload the file with the encoded object name
+        s3_client.upload_file(path_to_file, bucket_name, encoded_object_name)
     except FileNotFoundError:
         print(f"The file {path_to_file} was not found.")
         return None
@@ -38,7 +38,7 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
         print("AWS credentials not available.")
         return None
     except ClientError as e:
-        print(f"Failed to upload {path_to_file} to {bucket_name}/{object_name}: {e}")
+        print(f"Failed to upload {path_to_file} to {bucket_name}/{encoded_object_name}: {e}")
         return None
 
     # Construct the public URL
@@ -47,12 +47,13 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
         region = 'us-east-1'
 
     if region == 'us-east-1':
-        url = f"https://{bucket_name}.s3.amazonaws.com/{object_name}"
+        url = f"https://{bucket_name}.s3.amazonaws.com/{encoded_object_name}"
     else:
-        url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{object_name}"
+        url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{encoded_object_name}"
 
     print(url)
     return url
+
 
 
 def get_in_bucket(file_name, bucket_name=DEFAULT_BUCKET_NAME):
