@@ -1,7 +1,6 @@
 import json
 import os
 import time
-from urllib import parse
 
 import openai
 
@@ -20,7 +19,7 @@ class solver:
 
     def upload(self, problem: str):
         start_time = time.time()
-        name = parse.quote(problem) + '.mp4'
+        name = problem + '.mp4'
         core_instance = core(self.problem, openai.api_key)
         video_inputs = core_instance.start()
         mov = create_movie(openai.api_key)
