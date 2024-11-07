@@ -32,6 +32,13 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
     try:
         # Upload the file with the encoded object name
         s3_client.upload_file(path_to_file, bucket_name, encoded_object_name)
+        # obj = s3_client.get_object(Bucket=bucket_name, Key=encoded_object_name)
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': object_name},
+            ExpiresIn=3600  # URL valid for 1 hour
+        )
+
     except FileNotFoundError:
         print(f"The file {path_to_file} was not found.")
         return None
@@ -41,19 +48,19 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
     except ClientError as e:
         print(f"Failed to upload {path_to_file} to {bucket_name}/{encoded_object_name}: {e}")
         return None
+    #
+    # # Construct the public URL
+    # region = s3_client.get_bucket_location(Bucket=bucket_name)['LocationConstraint']
+    # if region is None:
+    #     region = 'us-east-1'
+    #
+    # if region == 'us-east-1':
+    #     url = f"https://{bucket_name}.s3.amazonaws.com/{encoded_object_name}"
+    # else:
+    #     url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{encoded_object_name}"
 
-    # Construct the public URL
-    region = s3_client.get_bucket_location(Bucket=bucket_name)['LocationConstraint']
-    if region is None:
-        region = 'us-east-1'
-
-    if region == 'us-east-1':
-        url = f"https://{bucket_name}.s3.amazonaws.com/{encoded_object_name}"
-    else:
-        url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{encoded_object_name}"
-
-    print(url)
-    return url
+    print(presigned_url)
+    return presigned_url
 
 
 
