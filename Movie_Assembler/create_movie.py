@@ -72,8 +72,8 @@ class create_movie:
             '&': r'\&',
             '~': r'\textasciitilde{}',
             '_': r'\_',
-            '{': r'\{',
-            '}': r'\}',
+            # '{': r'\{',
+            # '}': r'\}',
             # Do not escape backslashes or carets
         }
 
