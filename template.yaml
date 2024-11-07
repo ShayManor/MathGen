@@ -11,7 +11,7 @@ Resources:
       Handler: app.lambda_handler
       Runtime: python3.12  # Choose the Python version you are using
       CodeUri: .
-      MemorySize: 4096  # Adjust based on your application's needs
+      MemorySize: 16000  # Adjust based on your application's needs
       Timeout: 400      # Adjust based on your application's needs
       Policies:
         - AWSLambdaBasicExecutionRole

@@ -35,11 +35,16 @@ class on_screen_generator:
             ai_response.replace("\\\\", "\\")
             ai_response.replace("\\\\", "\\")
             split_str = ai_response.split('\n')
-            split_str = split_str[1:-1]
+            try:
+                split_str.remove('```latex')
+                split_str.remove('```')
+            except:
+                print("Fuck you")
             r = ""
             for s in split_str:
                 r = r + s + "\n"
             print(r)
+            r = r.replace('```latex', '').replace('```', '').strip()
             return r
         else:
             return "Error"

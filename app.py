@@ -26,7 +26,6 @@ def solve():
     if not problem:
         return jsonify({'error': 'No problem provided'}), 400
 
-    uuid_str = str(uuid.uuid4())
     result = solver(problem)
     print(f'Total time E2E: {time.time()-start_time} seconds')
     return result.upload()
