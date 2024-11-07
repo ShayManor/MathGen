@@ -23,7 +23,8 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
         object_name = os.path.basename(path_to_file)
 
     # Encode the object_name to ensure special characters are properly handled
-    encoded_object_name = urllib.parse.quote(object_name, safe='')
+    # encoded_object_name = urllib.parse.quote(object_name, safe='')
+    encoded_object_name = object_name
 
     # Initialize S3 client using environment variables
     s3_client = boto3.client('s3')
