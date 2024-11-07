@@ -28,7 +28,7 @@ def solve():
 
     result = solver(problem)
     print(f'Total time E2E: {time.time()-start_time} seconds')
-    return result.upload()
+    return result.upload(problem)
 
 
 @app.route('/ping/uuid_str', methods=['GET'])
