@@ -6,16 +6,11 @@ import concurrent.futures
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from moviepy.config import change_settings
 
-from moviepy.audio.AudioClip import AudioArrayClip
-from moviepy.editor import (
-    ImageClip, AudioFileClip, concatenate_audioclips
-)
-from moviepy.video.VideoClip import TextClip, ColorClip
-from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-from moviepy.video.compositing.concatenate import concatenate_videoclips
+from moviepy import *
 from openai import OpenAI
+
+from Movie_Creator.effects import TextAnimator
 
 
 # from script_to_audio import script_to_audio
@@ -27,14 +22,6 @@ class image:
         self.duration = None
         self.audio_path = None
         self.audio_url = None
-
-    # def __init__(self, path, cloudinary_url, start_time, duration, audio_path):
-    #     self.path = path
-    #     self.cloudinary_url = cloudinary_url
-    #     self.start_time = start_time
-    #     self.duration = duration
-    #     self.audio_path = audio_path
-
 
 class script_to_audio:
     def __init__(self, api_key):
@@ -59,7 +46,6 @@ class script_to_audio:
 class create_movie:
     def __init__(self, api_key):
         self.api_key = api_key
-        change_settings({"IMAGEMAGICK_BINARY": "magick"})
 
     def make_silence(self, duration, fps=44100, n_channels=2):
         total_samples = int(duration * fps)
@@ -69,14 +55,16 @@ class create_movie:
     def create_animated_text_clip(self, latex_str, duration):
         text_clip = TextClip(
             latex_str,
-            fontsize=50,
+            font_size=50,
             color='white',
             font='Arial',
             method='latex',
-        ).set_duration(duration)
+            duration=duration,
 
-        animated_clip = text_clip.crossfadein(1)  # 1 second fade-in
-        return animated_clip
+        )
+
+        # animated_clip = text_clip.crossfadein(1)  # 1 second fade-in
+        return text_clip
 
     def escape_latex(self, text):
         sanitized_text = self.sanitize_input(text)
@@ -106,8 +94,6 @@ class create_movie:
         text = text.replace('```latex', '').replace('```', '').strip()
         return text
 
-    import tempfile
-    import os
 
     def render_latex_to_image(self, latex_str, image_filename='latex_image.png'):
         # Define the path to save the image
@@ -120,7 +106,9 @@ class create_movie:
             "font.size": 24,
             "text.latex.preamble": r"\usepackage{amsmath}\usepackage{amssymb}\usepackage{amsfonts}"
         })
-        fig, ax = plt.subplots(figsize=(12, 6))
+
+        # Set figure size and DPI to match video resolution
+        fig, ax = plt.subplots(figsize=(12, 2), dpi=100)  # Transparent background
         ax.axis('off')
 
         # Ensure proper LaTeX environment
@@ -135,12 +123,14 @@ class create_movie:
             verticalalignment='center',
             transform=ax.transAxes
         )
+
         try:
-            plt.savefig(output_image_path, bbox_inches='tight', pad_inches=1, dpi=200)
+            # Save with transparent background
+            plt.savefig(output_image_path, bbox_inches='tight', pad_inches=1, dpi=100, transparent=True)
             print(f"LaTeX rendered successfully to {output_image_path}")
         except Exception as e:
             print(f'Error with LaTeX rendering: {e}')
-            raise  # Re-raise the exception to handle it upstream
+            raise
         finally:
             plt.close(fig)
 
@@ -152,12 +142,7 @@ class create_movie:
             print(f"Image {output_image_path} exists.")
             return output_image_path
 
-    def create_video_from_inputs(self, video_inputs, output_video='final_movie.mp4'):
-        if not video_inputs:
-            print("Error: video_inputs list is empty.")
-            return None
-
-        start_time = time.time()
+    def create_audio(self, video_inputs):
         silence_duration = 0.25  # 0.25 seconds of silence between audio clips
 
         audio_clips = []
@@ -205,7 +190,6 @@ class create_movie:
                     results[index] = (None, 0)
 
         # Process the results in order
-        current_time = 0.0
         for i in range(N):
             audio_clip, audio_duration = results[i]
             if audio_clip:
@@ -232,146 +216,102 @@ class create_movie:
         # Concatenate all audio clips
         print(f"Number of audio clips: {len(audio_clips)}")
         final_audio = concatenate_audioclips(audio_clips)
+        return final_audio, start_times, results
 
-        # Prepare video clips
-        final_duration = final_audio.duration
+    def get_position_function(self, i, start_times, base_y, shift_per_clip, x):
+        clip_start_time = start_times[i]
 
-        # Initialize variables
-        visible_lines = []
-        line_start_times = {}
-        line_end_times = {}
-        events = []
+        def position(t):
+            if t < clip_start_time:
+                # Before the clip starts, position it off-screen
+                return (x, -1000)  # Off-screen position
+            # Count the number of new clips started since this clip started
+            num_new_clips = sum(1 for st in start_times[i + 1:] if st <= t)
+            y = base_y + shift_per_clip * num_new_clips
+            return (x, y)
 
-        # Function to sanitize individual lines
-        def sanitize_line(line):
-            line = line.strip()
-            if line.startswith(r'\begin{align*}') and line.endswith(r'\end{align*}'):
-                # Remove the outer align* environment
-                line = line[len(r'\begin{align*}'): -len(r'\end{align*}')]
-            elif line.startswith('$$') and line.endswith('$$'):
-                # Remove $$ delimiters
-                line = line[2:-2]
-            return line
+        return position
 
-        # Collect start and end times for each line
+    def create_video(self, video_inputs, start_times, results):
+        clip_objects = []
+
+        # Define base position and shift per clip
+        base_y = 50  # Starting y-position
+        shift_per_clip = 60  # Pixels to shift down per clip
+        x = 'center'  # x-position
+
+        # Calculate the final duration based on the last clip's end time
+        final_duration = max([st + dur for st, (_, dur) in zip(start_times, results) if dur])
+
         for i, video_input in enumerate(video_inputs):
-            current_line = self.escape_latex(video_input.on_screen)
-            current_line = sanitize_line(current_line)  # Sanitize the line
-            start_time_line = start_times[i]
-            line_start_times[current_line] = start_time_line
-            events.append((start_time_line, 'start', current_line))
+            audio_clip, audio_duration = results[i]
+            if audio_clip is None:
+                continue
 
-            # Check if the line is already visible
-            if current_line in visible_lines:
-                print(f"Line already visible, skipping duplicate: {current_line}")
-                continue  # Skip adding duplicate lines
+            latex_str = video_input.on_screen
 
-            visible_lines.append(current_line)
+            # Escape LaTeX special characters
+            escaped_latex_str = self.escape_latex(latex_str)
 
-            # If more than 3 lines are visible, remove the oldest one
-            if len(visible_lines) > 3:
-                removed_line = visible_lines.pop(0)
-                end_time_line = start_time_line  # Current time
-                line_end_times[removed_line] = end_time_line
-                events.append((end_time_line, 'end', removed_line))
+            # Create TextClip
+            text_clip = TextClip(
+                font="Arial",
+                text=escaped_latex_str,
+                font_size=50,
+                color='white',
+                size=(1920, 1080)
+            )
 
-        # Set end times for remaining lines
-        for remaining_line in visible_lines:
-            line_end_times[remaining_line] = final_duration
-            events.append((final_duration, 'end', remaining_line))
+            # Set the duration of the TextClip to extend till the end
+            text_clip.duration = final_duration - start_times[i]
 
-        # Sort events by time
-        events.sort()
+            # Define position function
+            position_func = self.get_position_function(i, start_times, base_y, shift_per_clip, x)
+            text_clip.pos = position_func
+            text_clip.set_start = start_times[i]
 
-        # Process events to build intervals
-        intervals = []
-        current_visible_lines = []  # Changed from set to list
-        prev_time = 0.0
+            clip_objects.append(text_clip)
 
-        for event in events:
-            event_time, event_type, line_text = event
-            if event_time > prev_time:
-                # There is an interval from prev_time to event_time
-                if current_visible_lines:
-                    cumulative_text = r'\begin{align*}' + r' \\ '.join(current_visible_lines) + r'\end{align*}'
-                else:
-                    cumulative_text = ''  # Handle the case where no lines are visible
-                intervals.append((prev_time, event_time, cumulative_text))
-                prev_time = event_time
-            # Update current_visible_lines
-            if event_type == 'start':
-                # Insert at the beginning to make it the top line
-                current_visible_lines.insert(0, line_text)
-            elif event_type == 'end':
-                # Remove the line from the list
-                if line_text in current_visible_lines:
-                    current_visible_lines.remove(line_text)
+        return clip_objects
 
-        # Create ImageClips for each interval
-        image_clips = []
+    def create_video_from_inputs(self, video_inputs, output_video='final_movie.mp4'):
+        if not video_inputs:
+            print("Error: video_inputs list is empty.")
+            return None
 
-        for idx, (start_time_interval, end_time_interval, cumulative_text) in enumerate(intervals):
-            duration = end_time_interval - start_time_interval
-            if duration <= 0:
-                continue  # skip zero or negative duration intervals
-            image_file = f"latex_image_interval_{idx}.png"
-            if cumulative_text:
-                image_path = self.render_latex_to_image(cumulative_text, image_file)
-                if image_path:
-                    image_clip = ImageClip(image_path)
-                    image_clip = image_clip.set_duration(duration)
-                    image_clips.append(image_clip)
-                else:
-                    print(f"Skipping ImageClip creation for interval {idx} due to rendering failure.")
-            else:
-                # Create a blank image if no text is visible
-                blank_image_path = os.path.join(os.getcwd(), 'images', "blank_image.png")
-                if not os.path.exists(blank_image_path):
-                    # Create and save a blank image
-                    plt.figure(figsize=(6, 3))
-                    plt.axis('off')
-                    plt.savefig(blank_image_path, bbox_inches='tight', pad_inches=0.1, dpi=50)
-                    plt.close()
-                image_clip = ImageClip(blank_image_path).set_duration(duration)
-                image_clips.append(image_clip)
+        start_time_video = time.time()
 
-        # Optionally, add fade-in and fade-out effects to each image clip
-        for i in range(len(image_clips)):
-            image_clips[i] = image_clips[i].fadein(1).fadeout(1)
+        final_audio, start_times, results = self.create_audio(video_inputs)
 
-        # Concatenate ImageClips
-        video_clip = concatenate_videoclips(image_clips, method='compose')
-        video_clip = video_clip.set_audio(final_audio)
+        clip_objects = self.create_video(video_inputs, start_times, results)
 
-        # Write the video file
+        final_duration = final_audio.duration
+        background = ColorClip(size=(1920, 1080), color=(200, 200, 200))
+        background.duration = final_duration
+
+        video = CompositeVideoClip([background] + clip_objects, size=(1920, 1080))
+        video.duration = final_duration
+
         try:
-            video_clip.write_videofile(
+            video.write_videofile(
                 output_video,
-                fps=24,  # Increased fps for smoother transitions
+                fps=20,
                 codec='libx264',
-                preset='medium',  # Changed preset for better encoding
+                preset='ultrafast',
                 audio_codec='aac',
-                threads=4,
-                logger='bar'  # Enable logging to monitor progress
+                threads=4,  # Pretty sure this does nothing
+                logger='bar'
             )
             print(f"Video successfully created: {output_video}")
         except Exception as e:
             print(f"Error writing video file: {e}")
 
-        # Clean up image and audio files
-        for idx in range(len(intervals)):
-            image_file = f"latex_image_interval_{idx}.png"
+        # Clean up image files
+        for i in range(len(video_inputs)):
+            image_file = f"latex_image_line_{i}.png"
             image_path = os.path.join(os.getcwd(), 'images', image_file)
             if os.path.exists(image_path):
                 os.remove(image_path)
-        for i in range(len(video_inputs)):
-            audio_file = f"{i:03}audio.mp3"
-            audio_path = os.path.join(os.getcwd(), audio_file)
-            if os.path.exists(audio_path):
-                os.remove(audio_path)
-        blank_image_path = os.path.join(os.getcwd(), 'images', "blank_image.png")
-        if os.path.exists(blank_image_path):
-            os.remove(blank_image_path)
 
-        print(f"Total time taken: {time.time() - start_time} seconds.")
+        print(f"Total time taken: {time.time() - start_time_video} seconds.")
         return output_video
