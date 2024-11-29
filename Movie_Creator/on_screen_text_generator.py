@@ -39,7 +39,7 @@ class on_screen_generator:
                 split_str.remove('```latex')
                 split_str.remove('```')
             except:
-                print("Error with latex removal")
+                print("Fuck you")
             r = ""
             for s in split_str:
                 r = r + s + "\n"
