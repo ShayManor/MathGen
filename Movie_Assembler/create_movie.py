@@ -218,29 +218,41 @@ class create_movie:
         final_audio = concatenate_audioclips(audio_clips)
         return final_audio, start_times, results
 
-    def get_position_function(self, i, start_times, base_y, shift_per_clip, x):
-        clip_start_time = start_times[i]
-
+    def get_position_function(self, i, start_times, end_time, base_y, shift_per_clip, max_lines):
         def position(t):
-            if t < clip_start_time:
-                # Before the clip starts, position it off-screen
-                return (x, -1000)  # Off-screen position
-            # Count the number of new clips started since this clip started
-            num_new_clips = sum(1 for st in start_times[i + 1:] if st <= t)
-            y = base_y + shift_per_clip * num_new_clips
-            return (x, y)
+            if t < start_times[i]:
+                return ('center', -1000)  # Off-screen before start
+
+            # Calculate the list of active clips at time t
+            active_clips = []
+            for j in range(len(start_times)):
+                clip_start = start_times[j]
+                clip_end = end_time if j == i else (
+                    start_times[j + max_lines] if j + max_lines < len(start_times) else end_time)
+                if clip_start <= t < clip_end:
+                    active_clips.append(j)
+
+            # Limit to max_lines
+            active_clips = active_clips[-max_lines:]
+
+            # Find the index of the current clip in the active list
+            if i in active_clips:
+                index_in_active = active_clips.index(i)
+                y = base_y + shift_per_clip * index_in_active
+                return ('center', y)
+            else:
+                return ('center', -1000)  # Off-screen after end
 
         return position
 
     def create_video(self, video_inputs, start_times, results):
         clip_objects = []
+        max_lines = 5
+        exit_duration = 0.5  # Duration for the exit animation
+        base_y = 100  # Starting y-position
+        shift_per_clip = 60  # Pixels to shift per clip
 
-        # Define base position and shift per clip
-        base_y = 50  # Starting y-position
-        shift_per_clip = 60  # Pixels to shift down per clip
-        x = 'center'  # x-position
-
-        # Calculate the final duration based on the last clip's end time
+        N = len(video_inputs)
         final_duration = max([st + dur for st, (_, dur) in zip(start_times, results) if dur])
 
         for i, video_input in enumerate(video_inputs):
@@ -248,9 +260,16 @@ class create_movie:
             if audio_clip is None:
                 continue
 
-            latex_str = video_input.on_screen
+            start_time = start_times[i]
+            # Determine end time
+            if i + max_lines < N:
+                end_time = start_times[i + max_lines]
+            else:
+                end_time = final_duration
 
-            # Escape LaTeX special characters
+            duration = end_time - start_time
+
+            latex_str = video_input.on_screen
             escaped_latex_str = self.escape_latex(latex_str)
 
             # Create TextClip
@@ -261,16 +280,63 @@ class create_movie:
                 color='white',
                 size=(1920, 1080)
             )
+            text_clip.start = start_time
+            text_clip.duration = duration
 
-            # Set the duration of the TextClip to extend till the end
-            text_clip.duration = final_duration - start_times[i]
+            # Apply entrance animation
+            if hasattr(video_input, 'effect') and video_input.effect:
+                effect = video_input.effect
+                text_animator = TextAnimator(
+                    text=escaped_latex_str,
+                    fontsize=50,
+                    color='white',
+                    kerning=5,
+                    screensize=(1920, 1080)
+                )
+                entrance_clip = text_animator.animate_text(effect=effect, duration=1)
+                entrance_clip.start = start_time
 
-            # Define position function
-            position_func = self.get_position_function(i, start_times, base_y, shift_per_clip, x)
-            text_clip.pos = position_func
-            text_clip.set_start = start_times[i]
+                # Adjust duration if entrance animation is longer
+                if entrance_clip.duration > duration:
+                    duration = entrance_clip.duration
+                    text_clip.duration = duration
+            else:
+                entrance_clip = text_clip  # No entrance animation
 
-            clip_objects.append(text_clip)
+            # Apply exit animation
+            exit_effect = 'vortexout'  # Or any other effect you prefer
+            exit_animator = TextAnimator(
+                text=escaped_latex_str,
+                fontsize=50,
+                color='white',
+                kerning=5,
+                screensize=(1920, 1080)
+            )
+            exit_clip = (exit_animator.animate_text(effect=exit_effect, duration=exit_duration))
+            exit_clip.start = end_time - exit_duration
+
+            # Main text clip without animations
+            main_clip_duration = duration - entrance_clip.duration - exit_clip.duration
+            if main_clip_duration > 0:
+                main_clip = text_clip
+                main_clip.start = start_time + entrance_clip.duration
+                main_clip.duration = main_clip_duration
+            else:
+                main_clip = None
+
+            # Combine clips
+            clips_to_concatenate = [entrance_clip]
+            if main_clip:
+                clips_to_concatenate.append(main_clip)
+            clips_to_concatenate.append(exit_clip)
+
+            full_clip = concatenate_videoclips(clips_to_concatenate, method="compose")
+
+            # Set position function
+            position_func = self.get_position_function(i, start_times, end_time, base_y, shift_per_clip, max_lines)
+            full_clip.pos = position_func
+
+            clip_objects.append(full_clip)
 
         return clip_objects
 
@@ -283,15 +349,29 @@ class create_movie:
 
         final_audio, start_times, results = self.create_audio(video_inputs)
 
+        if final_audio is None:
+            print("Error: Final audio is None.")
+            return None
+
         clip_objects = self.create_video(video_inputs, start_times, results)
 
         final_duration = final_audio.duration
         background = ColorClip(size=(1920, 1080), color=(200, 200, 200))
         background.duration = final_duration
 
+        # Ensure clip_objects is a list of VideoClips
+        if not isinstance(clip_objects, list):
+            print("Error: clip_objects is not a list.")
+            return None
+
+        # Composite all clips over the background
         video = CompositeVideoClip([background] + clip_objects, size=(1920, 1080))
         video.duration = final_duration
 
+        # Attach the audio
+        video.audio = final_audio
+
+        # Write the final video
         try:
             video.write_videofile(
                 output_video,
@@ -299,7 +379,7 @@ class create_movie:
                 codec='libx264',
                 preset='ultrafast',
                 audio_codec='aac',
-                threads=4,  # Pretty sure this does nothing
+                threads=4,
                 logger='bar'
             )
             print(f"Video successfully created: {output_video}")
