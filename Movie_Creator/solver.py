@@ -13,9 +13,6 @@ class solver:
     def __init__(self, problem):
         self.problem = problem
         self.link = ''
-        os.environ[
-            "OPENAI_API_KEY"] = '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'
-        openai.api_key = os.environ["OPENAI_API_KEY"]
 
     def upload(self, problem: str):
         start_time = time.time()

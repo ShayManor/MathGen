@@ -18,7 +18,7 @@ def index():
     return json.dumps({'url': 'test123'})
 
 
-@app.route('/solve', methods=['POST'])
+@app.route('/math', methods=['POST'])
 def solve():
     start_time = time.time()
     data = request.get_json()
