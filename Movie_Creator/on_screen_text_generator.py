@@ -1,13 +1,14 @@
 from openai import OpenAI
 from typing import *
 
+
 class on_screen_generator:
     def __init__(self):
         self.client = OpenAI()
         # self.assistant_id = 'asst_CoRUsRi8KqrdnZIP4UyCi2WY'
         self.assistant_id = 'asst_x9o2SLVQzX6YKhLVjOtPWHAy'
 
-    def start_process(self, block: str):
+    def start_process(self, block: str) -> str:
         script = block.split('~')
         l = len(script)
         newscr = []
@@ -39,7 +40,7 @@ class on_screen_generator:
                 split_str.remove('```latex')
                 split_str.remove('```')
             except:
-                print("Fuck you")
+                pass
             r = ""
             for s in split_str:
                 r = r + s + "\n"

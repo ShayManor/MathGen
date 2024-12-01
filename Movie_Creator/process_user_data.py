@@ -1,16 +1,23 @@
+from enum import Enum
+
 from openai import OpenAI
+
+
+class Assistant(Enum):
+    MATH = "asst_VRHhu2ImFPxGBi05iz2AnjOc"
+    WORD = "asst_yidBWoO0tSRapALomfQKtWky"
 
 
 class process_data:
     def __init__(self, problem, api_key):
-        OpenAI.api_key = api_key
-        self.assistant_id = "asst_VRHhu2ImFPxGBi05iz2AnjOc"
+        # OpenAI.api_key = api_key
         self.client = OpenAI()
         self.prompt = "Problem: " + problem
 
-    def start_processing(self):
+    def start_processing(self, assistant: Assistant):
+
         assistant = self.client.beta.assistants.retrieve(
-            assistant_id=self.assistant_id
+            assistant_id=assistant.value
         )
         thread = self.client.beta.threads.create(
             messages=[{"role": "user", "content": self.prompt}]

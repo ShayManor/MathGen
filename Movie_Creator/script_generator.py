@@ -9,6 +9,7 @@ class script_generator:
         self.prompt = prompt
 
     def start_process(self):
+        print(self.client.api_key)
         assistant = self.client.beta.assistants.retrieve(
             assistant_id=self.assistant_id
         )

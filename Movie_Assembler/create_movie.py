@@ -264,13 +264,10 @@ class create_movie:
 
         for idx in range(len(intervals)):
             image_file = f"latex_image_interval_{idx}.png"
-            print(image_file)
             if os.path.exists(image_file):
                 os.remove(image_file)
         for i in range(len(video_inputs)):
             audio_file = f"{i:03}audio.mp3"
-            print(audio_file)
-            print(os.path.exists(audio_file))
             if os.path.exists(audio_file):
                 os.remove(audio_file)
 

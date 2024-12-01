@@ -1,7 +1,7 @@
 from PIL.ImageChops import screen
 
 from Movie_Creator.on_screen_text_generator import on_screen_generator
-from Movie_Creator.process_user_data import process_data
+from Movie_Creator.process_user_data import process_data, Assistant
 from Movie_Creator.script_generator import script_generator
 from Movie_Creator.video_input import video_input
 
@@ -11,13 +11,21 @@ class core:
         self.problem = problem
         self.apiKey = api_key
 
-    def start(self):
+    def word_start(self):
         process = process_data(self.problem, api_key=self.apiKey)
-        post_processed_data = process.start_processing()
+        post_processed_data = process.start_processing(Assistant.WORD)
         print("Post Processing Finished")
-        print(post_processed_data)
+        return self.start(post_processed_data)
+
+    def math_start(self):
+        process = process_data(self.problem, api_key=self.apiKey)
+        post_processed_data = process.start_processing(Assistant.MATH)
+        print("Post Processing Finished")
+        return self.start(post_processed_data)
+
+    def start(self, post_processed_data: str):
         # if post_processed_data == "Error":
-        #     return False
+        # return False
 
         script = script_generator(apiKey=self.apiKey, prompt=post_processed_data)
         script = script.start_process()

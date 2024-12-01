@@ -9,6 +9,7 @@ DEFAULT_BUCKET_NAME = 'manors-videos-bucket'
 
 load_dotenv()
 
+
 def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_NAME, object_name=None, public=True):
     """Upload a file to an S3 bucket
 
@@ -18,6 +19,7 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
     :param public: Whether the uploaded file should be publicly accessible
     :return: URL of the uploaded file or None if failed
     """
+    return "test_url"
     # If S3 object_name was not specified, use file basename
     if object_name is None:
         object_name = os.path.basename(path_to_file)
@@ -60,7 +62,6 @@ def upload_to_bucket(path_to_file='final_movie.mp4', bucket_name=DEFAULT_BUCKET_
     #     url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{encoded_object_name}"
 
     return str(url)
-
 
 
 def get_in_bucket(file_name, bucket_name=DEFAULT_BUCKET_NAME):
